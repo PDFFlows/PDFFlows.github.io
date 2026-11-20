@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PDFflow: chat with your PDF</title>
+  <meta name="description" content="PDFflow is a small open-source PDF editor with an AI Assistant. Ask it to review, mark up or rewrite a document and watch every edit land on the page. DeepSeek, OpenAI, vLLM, Ollama, OpenRouter, Claude Code or Codex.">
+  <meta name="theme-color" content="#f4f1ea" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#141317" media="(prefers-color-scheme: dark)">
+  <link rel="icon" href="assets/icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="nav">
+    <div class="wrap">
+      <a class="brand" href="#top" aria-label="PDFflow home">
+        <img src="assets/icon.png" alt="" width="28" height="28">
+        PDFflow
+      </a>
+      <nav class="nav-links" aria-label="Sections">
+        <a href="#chat">Chat</a>
+        <a href="#editor">Editor</a>
+        <a href="#agents">For agents</a>
+        <a href="#specs">Specs</a>
+      </nav>
+      <a class="btn btn-primary" href="#download">Download</a>
+    </div>
+  </header>
+
+  <main id="main">
+    <!-- 1. Hero: the claim, then the claim happening -->
+    <section class="hero" id="top" aria-labelledby="hero-title">
+      <div class="wrap">
+        <div class="hero-head">
+          <div>
+            <p class="eyebrow">PDFflow 0.1.5 · open source · macOS and Windows</p>
+            <h1 id="hero-title">Chat with <span class="hl hl-draw" data-draw>your PDF</span>.</h1>
+          </div>
+          <div class="hero-side">
+            <p class="lede">Ask the Assistant to review, mark up or rewrite a document. It reads the pages, highlights what matters, leaves comments and changes the text, in your window, while you watch. One undo takes the whole message back.</p>
+            <div class="cta-row" style="margin-top: var(--s-6)">
+              <a class="btn btn-primary" href="https://github.com/Sompote/PDFflow/releases/download/v0.1.5/PDFflow-0.1.5-macOS-universal.dmg">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></svg>
+                Download for macOS
+              </a>
+              <a class="btn btn-quiet" href="https://github.com/Sompote/PDFflow/releases/download/v0.1.5/PDFflow-0.1.5-windows-x64.zip">Windows</a>
+              <a class="btn btn-quiet" href="https://github.com/Sompote/PDFflow">Source</a>
+              <span class="cta-note">Free, AGPL-3.0. Universal app for Apple Silicon and Intel.</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="demo" id="chat">
+          <article class="sheet" aria-label="A report page as the Assistant reviews it">
+            <div class="sheet-meta"><span>site-report.pdf</span><span>page 3 of 12</span></div>
+            <h2>4.2 Bearing capacity of the pad footing</h2>
+            <p>The footing is 2.0 m square and founded 1.5 m below ground on medium dense sand with a unit weight of <span class="hl hl-draw" data-step="hl1">18 kN/m²</span>. With the water table below the zone of influence, the ultimate bearing capacity follows the Terzaghi expression for a square footing.</p>
+            <p>The allowable pressure is taken as the ultimate value divided by a factor of safety of 3.0, which gives <span class="strike" data-step="strike">310 kN</span> <span class="ins" data-step="ins">310 kPa</span> against an applied pressure of 185 kPa.</p>
+            <p>Settlement under the service load is estimated at 12.4 mm, within the 25 mm limit for isolated footings on sand.</p>
+            <div class="note" data-step="note" role="note">
+              <b>Assistant</b>
+              Unit weight is a force per volume: 18 kN/m³, not kN/m². Please check the value used in Nγ.
+            </div>
+          </article>
+
+          <div class="chat" aria-label="The PDFflow Assistant panel">
+            <div class="chat-head">
+              <span class="chat-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>
+                Assistant
+              </span>
+              <span class="chip">DeepSeek · deepseek-chat</span>
+            </div>
+            <div class="log" id="log" aria-live="polite"></div>
+            <div class="composer">
+              <span>Ask the agent to review or edit this PDF...</span>
+              <button class="btn replay" id="replay" type="button">Replay</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. Providers, set as a reference list -->
+    <section class="refs" aria-labelledby="refs-title">
+      <div class="wrap refs-grid">
+        <div>
+          <p class="eyebrow">Models</p>
+          <h2 id="refs-title">Runs on the model you already use.</h2>
+        </div>
+        <ol>
+          <li><span>[1]</span><div>DeepSeek<small>API key</small></div></li>
+          <li><span>[2]</span><div>OpenAI<small>or any compatible API</small></div></li>
+          <li><span>[3]</span><div>vLLM<small>your own server</small></div></li>
+          <li><span>[4]</span><div>Ollama<small>on this computer</small></div></li>
+          <li><span>[5]</span><div>OpenRouter<small>API key</small></div></li>
+          <li><span>[6]</span><div>Claude Code<small>your subscription</small></div></li>
+          <li><span>[7]</span><div>Codex<small>your subscription</small></div></li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- 3. One message, one undo -->
+    <section class="undo" aria-labelledby="undo-title">
+      <div class="wrap undo-grid">
+        <div class="undo-head">
+          <p class="eyebrow">How a message runs</p>
+          <h2 id="undo-title">One message, one undo.</h2>
+          <p>The Assistant works through the same tools you do, on the document in your window, not on a copy. Each step shows in the chat as a row with its arguments, its result and how long it took. When the message ends, everything it changed folds into a single undo step.</p>
+        </div>
+        <div>
+          <ol class="timeline">
+            <li><span class="verb">Reads</span><div class="what"><code>get_text</code> <code>find_text</code> <code>get_outline</code> to find the passage, <code>render_page</code> to look at figures and scans.</div></li>
+            <li><span class="verb">Marks</span><div class="what"><code>markup_text</code> highlights, underlines or strikes the exact words and pins a comment beside them, saved as a real PDF annotation.</div></li>
+            <li><span class="verb">Edits</span><div class="what"><code>replace_text</code> retypes printed words on the same baseline and size. <code>batch</code> groups edits and rolls them all back if one fails.</div></li>
+            <li><span class="verb">Checks</span><div class="what"><code>render_page</code> again on every page it changed, so overflow and overlaps are caught before you see them.</div></li>
+            <li><span class="verb">Hands back</span><div class="what">A short summary by page. Keep it, or press Undo once.</div></li>
+          </ol>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. Statement -->
+    <section class="statement" aria-label="Principle">
+      <div class="wrap">
+        <p>The agent edits in your window, <em>not behind your back.</em></p>
+      </div>
+    </section>
+
+    <!-- 5. Features: one lead tile -->
+    <section class="features" id="editor" aria-labelledby="features-title">
+      <div class="wrap">
+        <div class="features-head">
+          <h2 id="features-title">A real editor underneath.</h2>
+          <p>The chat sits beside a small, fast PDF editor with a Photoshop-style interface. Everything the Assistant does, you can also do by hand.</p>
+        </div>
+        <div class="bento">
+          <article class="tile tile-lead">
+            <p class="eyebrow" style="color: var(--app-dim)">The Assistant panel</p>
+            <h3>Review a paper in one message.</h3>
+            <p>Pick a provider, paste a key or point it at your vLLM server, and ask. Drop pictures, PDFs or text files on the chat to give it more to work with.</p>
+            <figure><img src="assets/assistant.png" alt="PDFflow with the Assistant panel open beside a page, showing the provider settings and example requests" width="1600" height="1025" loading="lazy"></figure>
+          </article>
+          <article class="tile">
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v16"/><path d="M4 7V5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v2"/><path d="M9 20h6"/></svg>
+            <h3>Type on the page</h3>
+            <p>Real, selectable text in Thai and Latin, whiteout, shapes, ink, paths and pictures.</p>
+          </article>
+          <article class="tile">
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 9a2 2 0 0 1-2 2H6l-4 4V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2z"/><path d="M18 9h2a2 2 0 0 1 2 2v11l-4-4h-6a2 2 0 0 1-2-2v-1"/></svg>
+            <h3>Comments that travel</h3>
+            <p>Sticky notes and markups are saved as PDF annotations that Acrobat and Preview show.</p>
+          </article>
+          <article class="tile">
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21 17-2.156-1.868A.5.5 0 0 0 18 15.5v.5a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1c0-2.545-3.991-3.97-8.5-4a1 1 0 0 0 0 5c4.153 0 4.745-11.295 5.708-13.5a2.5 2.5 0 1 1 3.31 3.284"/><path d="M3 21h18"/></svg>
+            <h3>Sign it</h3>
+            <p>Drawn signatures, and digital signatures with your own certificates, checked on open.</p>
+          </article>
+          <article class="tile">
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+            <h3>Fix the pictures</h3>
+            <p>Levels, exposure, hue and saturation, crop, healing and clone on the pictures inside the PDF.</p>
+          </article>
+          <article class="tile tile-wide">
+            <div>
+              <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
+              <h3 style="margin-top: var(--s-3)">Pages, in any order</h3>
+              <p style="margin-top: var(--s-2)">Reorder in the Page Grid, rotate, delete, insert, merge another file, and drag pages between windows.</p>
+            </div>
+            <figure><img src="assets/page-grid.png" alt="The Page Grid showing a document's pages as thumbnails" width="1400" height="897" loading="lazy"></figure>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. For agents -->
+    <section class="agents" id="agents" aria-labelledby="agents-title">
+      <div class="wrap agents-grid">
+        <div>
+          <p class="eyebrow">For agents</p>
+          <h2 id="agents-title">Bring your own agent.</h2>
+          <p>PDFflow is also an MCP server. Connect Claude Code, Claude Desktop or any MCP client and it drives the open window with the same tools the Assistant uses.</p>
+          <ul class="facts">
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span>52 tools: documents, text, markup, pages, objects, pictures, signatures.</span></li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span>Arguments checked against the schema; a typo comes back with the valid names.</span></li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span>Several documents at once, one window each, addressed by id.</span></li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span>Ready prompts: <code style="font-family: var(--font-mono)">review_pdf</code> and <code style="font-family: var(--font-mono)">edit_pdf</code>.</span></li>
+          </ul>
+        </div>
+        <div class="term">
+          <div class="term-bar">
+            <span>Terminal</span>
+            <button class="btn btn-quiet copy" id="copy" type="button" aria-pressed="false">Copy</button>
+          </div>
+<pre id="cmd"><span class="c"># connect Claude Code (starts PDFflow when needed)</span>
+<span class="k">claude</span> mcp add --scope user pdfflow -- /Applications/PDFflow.app/Contents/MacOS/pdfflow --mcp
+
+<span class="c"># or over HTTP while PDFflow is open</span>
+<span class="k">claude</span> mcp add --scope user --transport http pdfflow http://127.0.0.1:7878/mcp
+
+<span class="c"># print both for your copy of PDFflow</span>
+<span class="k">pdfflow</span> --mcp-config</pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. Specs as footnotes -->
+    <section class="specs" id="specs" aria-labelledby="specs-title">
+      <div class="wrap">
+        <p class="eyebrow">Specifications</p>
+        <h2 id="specs-title">Small on purpose.</h2>
+        <dl>
+          <div class="row"><dt>Binary</dt><dd>13.6 MB on Apple Silicon, 16.6 MB on Intel<small>Measured on the 0.1.5 release build.</small></dd></div>
+          <div class="row"><dt>Written in</dt><dd>Rust, with egui on OpenGL<small>No web view. It repaints only on input.</small></dd></div>
+          <div class="row"><dt>Agent harness</dt><dd>th-hive, a Rust port of DeepSeek Harness<small>Retry, compaction, a plan, optional subagents and a session log per chat.</small></dd></div>
+          <div class="row"><dt>MCP</dt><dd>52 tools, two prompts<small>Streamable HTTP on 127.0.0.1, or stdio with <code style="font-family: var(--font-mono)">pdfflow --mcp</code>.</small></dd></div>
+          <div class="row"><dt>Tests</dt><dd>79 in the app, 39 in the harness crates</dd></div>
+          <div class="row"><dt>Platforms</dt><dd>macOS 10.15 or later (universal), Windows 10 and 11 (64-bit)</dd></div>
+          <div class="row"><dt>Licence</dt><dd>AGPL-3.0-or-later<small>The vendored harness crates are MIT.</small></dd></div>
+        </dl>
+      </div>
+    </section>
+
+    <!-- 8. Download colophon -->
+    <section class="download" id="download" aria-labelledby="download-title">
+      <div class="wrap">
+        <div class="colophon">
+          <div>
+            <p class="eyebrow">Version 0.1.5</p>
+            <h2 id="download-title">Open a PDF. <em>Ask it something.</em></h2>
+          </div>
+          <div>
+            <p>Download PDFflow, open a document, click Assistant in the status bar and choose a model.</p>
+            <div class="cta-row">
+              <a class="btn btn-primary" href="https://github.com/Sompote/PDFflow/releases/download/v0.1.5/PDFflow-0.1.5-macOS-universal.dmg">macOS (.dmg)</a>
+              <a class="btn btn-quiet" href="https://github.com/Sompote/PDFflow/releases/download/v0.1.5/PDFflow-0.1.5-macOS-universal.zip">macOS (.zip)</a>
+              <a class="btn btn-quiet" href="https://github.com/Sompote/PDFflow/releases/download/v0.1.5/PDFflow-0.1.5-windows-x64.zip">Windows (.zip)</a>
+            </div>
+            <p class="fine" style="margin-top: var(--s-6)">The builds are not signed by Apple or Microsoft. On macOS, right-click PDFflow.app and choose Open, or run <code>xattr -dr com.apple.quarantine /Applications/PDFflow.app</code>. On Windows, choose More info, then Run anyway. Checksums are in <a href="https://github.com/Sompote/PDFflow/releases/download/v0.1.5/SHA256SUMS.txt">SHA256SUMS.txt</a>.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <span>PDFflow, an open-source PDF editor. AGPL-3.0-or-later.</span>
+      <span><a href="https://github.com/Sompote/PDFflow">GitHub</a> · <a href="https://github.com/Sompote/PDFflow/releases">Releases</a> · <a href="https://github.com/Sompote/PDFflow#readme">Documentation</a></span>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
